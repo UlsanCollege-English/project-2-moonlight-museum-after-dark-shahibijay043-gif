@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from typing import Deque
 
 
 @dataclass(frozen=True)
@@ -20,11 +19,13 @@ class RestorationRequest:
     description: str
 
 
+# ---------------- BST ----------------
+
 class TreeNode:
-    def __init__(self, artifact, left=None, right=None):
+    def __init__(self, artifact):
         self.artifact = artifact
-        self.left = left
-        self.right = right
+        self.left = None
+        self.right = None
 
 
 class ArtifactBST:
@@ -32,7 +33,7 @@ class ArtifactBST:
         self.root = None
 
     def insert(self, artifact):
-        if self.root is None:
+        if not self.root:
             self.root = TreeNode(artifact)
             return True
 
@@ -40,15 +41,13 @@ class ArtifactBST:
         while True:
             if artifact.artifact_id == current.artifact.artifact_id:
                 return False
-
             elif artifact.artifact_id < current.artifact.artifact_id:
-                if current.left is None:
+                if not current.left:
                     current.left = TreeNode(artifact)
                     return True
                 current = current.left
-
             else:
-                if current.right is None:
+                if not current.right:
                     current.right = TreeNode(artifact)
                     return True
                 current = current.right
@@ -101,6 +100,8 @@ class ArtifactBST:
         return result
 
 
+# ---------------- QUEUE ----------------
+
 class RestorationQueue:
     def __init__(self):
         self._items = deque()
@@ -124,6 +125,8 @@ class RestorationQueue:
     def size(self):
         return len(self._items)
 
+
+# ---------------- STACK ----------------
 
 class ArchiveUndoStack:
     def __init__(self):
@@ -149,10 +152,12 @@ class ArchiveUndoStack:
         return len(self._items)
 
 
+# ---------------- LINKED LIST ----------------
+
 class ExhibitNode:
-    def __init__(self, stop_name, next_node=None):
+    def __init__(self, stop_name):
         self.stop_name = stop_name
-        self.next = next_node
+        self.next = None
 
 
 class ExhibitRoute:
@@ -190,14 +195,14 @@ class ExhibitRoute:
         return False
 
     def list_stops(self):
-        stops = []
+        result = []
         current = self.head
 
         while current:
-            stops.append(current.stop_name)
+            result.append(current.stop_name)
             current = current.next
 
-        return stops
+        return result
 
     def count_stops(self):
         count = 0
@@ -210,17 +215,20 @@ class ExhibitRoute:
         return count
 
 
+# ---------------- UTILITIES ----------------
+
 def count_artifacts_by_category(artifacts):
     result = {}
-
     for art in artifacts:
         result[art.category] = result.get(art.category, 0) + 1
-
     return result
 
 
 def unique_rooms(artifacts):
-    return {art.room for art in artifacts}
+    rooms = set()
+    for art in artifacts:
+        rooms.add(art.room)
+    return rooms
 
 
 def sort_artifacts_by_age(artifacts, descending=False):
@@ -234,30 +242,39 @@ def linear_search_by_name(artifacts, name):
     return None
 
 
-def demo_museum_night():
-    print("Demo running...")
+# ---------------- DEMO (FIXED FOR TEST) ----------------
 
-    a1 = Artifact(1, "Vase", "Ancient", 200, "Room A")
-    a2 = Artifact(2, "Statue", "Medieval", 500, "Room B")
+def demo_museum_night():
+    print("Moonlight Museum After Dark")
+
+    artifacts = [
+        Artifact(40, "Cursed Mirror", "mirror", 220, "North Hall"),
+        Artifact(20, "Clockwork Bird", "machine", 80, "Workshop"),
+        Artifact(60, "Whispering Map", "paper", 140, "Archive"),
+        Artifact(10, "Glowing Key", "metal", 35, "Vault"),
+        Artifact(30, "Moon Dial", "device", 120, "North Hall"),
+        Artifact(50, "Silver Mask", "costume", 160, "Gallery"),
+        Artifact(70, "Lantern Jar", "glass", 60, "Gallery"),
+        Artifact(25, "Ink Compass", "device", 120, "Archive"),
+    ]
 
     bst = ArtifactBST()
-    bst.insert(a1)
-    bst.insert(a2)
+    for art in artifacts:
+        bst.insert(art)
 
-    print("Inorder:", bst.inorder_ids())
+    print("Inorder IDs:", bst.inorder_ids())
 
     queue = RestorationQueue()
-    queue.add_request(RestorationRequest(1, "Clean"))
-
-    print("Next request:", queue.peek_next_request())
+    queue.add_request(RestorationRequest(40, "Polish mirror"))
+    print("Next restoration request:", queue.peek_next_request())
 
     stack = ArchiveUndoStack()
     stack.push_action("Added artifact")
-
-    print("Undo:", stack.undo_last_action())
+    print("Undo action:", stack.undo_last_action())
 
     route = ExhibitRoute()
     route.add_stop("Entrance")
     route.add_stop("Gallery")
+    print("Exhibit route:", route.list_stops())
 
-    print("Route:", route.list_stops())
+    print("Category counts:", count_artifacts_by_category(artifacts))
